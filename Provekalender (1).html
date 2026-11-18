@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="nb"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prøvekalender</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6fc;color:#202445;font:16px Inter,system-ui,sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{background:#22224f;color:white;padding:24px max(20px,calc((100vw - 1220px)/2))}header div,.toolbar,.heading,.actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}h1,h2,p{margin:0}header p{color:#dad8fa;margin-top:5px}button,.link{border:1px solid #d8daea;border-radius:9px;background:white;color:#25254f;padding:8px 12px}.primary,[aria-pressed=true]{background:#5141c2;color:white;border-color:#5141c2}main{max-width:1260px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px;align-items:start}.panel{background:white;border:1px solid #dfe1ee;border-radius:16px;padding:16px}.toolbar{margin-bottom:16px}.group{display:flex;gap:5px;flex-wrap:wrap}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.weekday{text-align:center;font-size:.8rem;color:#555a78;padding:6px 0}.day{position:relative;min-height:85px;border-radius:8px;background:#f5f6fb;padding:4px;min-width:0;border:1px solid transparent}.day.outside{background:#fafafd}.day.closed{background:#fff1e8}.holiday{display:block;color:#863d20;font-size:.72rem;overflow:hidden;text-overflow:ellipsis}.day.selected{border-color:#5141c2;background:#eeebff}.day button{border:0;background:transparent;width:100%;text-align:left;padding:3px 5px}.day button[aria-current=date]{font-weight:800;color:#4935b2}.day .entry{display:block;background:#e1dcff;color:#392794;border-radius:5px;margin-top:3px;font-size:.77rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.week .day{min-height:220px}.week .lesson{font-size:.75rem;overflow-wrap:anywhere;color:#4e536f}.muted{color:#555a78;font-size:.87rem}.side h2{font-size:1.16rem}.side section+section{margin-top:20px;border-top:1px solid #e5e6f0;padding-top:16px}.item{margin-top:9px;padding:9px;background:#f4f2ff;border-radius:8px;overflow-wrap:anywhere}.item button{border:0;background:transparent;text-align:left;padding:0;font-weight:700}.item a{display:block;margin-top:4px;color:#40319c}.item small{display:block;color:#555a78}.side p,dialog p{margin:8px 0}.storage{grid-column:1/-1}.error{color:#a12038}dialog{border:1px solid #dfe1ee;border-radius:16px;width:min(460px,calc(100% - 24px));max-height:90vh;color:inherit;padding:20px}dialog::backdrop{background:#15142b88}label{display:block;margin:10px 0}input,select{display:block;width:100%;padding:8px;margin-top:4px;border:1px solid #bfc3da;border-radius:7px;background:white;color:inherit}button:focus-visible,a:focus-visible{outline:2px solid #6f54ef;outline-offset:2px}[hidden]{display:none!important}@media(max-width:850px){main{grid-template-columns:1fr}}@media(max-width:520px){main{padding:0 8px;margin-top:12px}.panel{padding:8px}.day{min-height:61px;padding:2px}.week.calendar{grid-template-columns:1fr}.week .weekday{display:none}.week .day{min-height:64px}.week .day button{text-align:left}}
+</style>
+</head><body><header><div><section><h1>Prøvekalender</h1><p>Prøver, innleveringer og muntlige vurderinger</p></section><nav class="group"><button id="schoolRoute">Skolerute</button><button id="schedule">Min timeplan</button><button id="add" class="primary">＋ Ny vurdering</button></nav></div></header>
+<main>
+<section class="panel" aria-label="Kalender">
+<div class="toolbar"><div class="group"><button id="prev" aria-label="Forrige periode">‹</button><button id="today">I dag</button><button id="next" aria-label="Neste periode">›</button></div><h2 id="period" aria-live="polite"></h2><div class="group"><button id="month">Måned</button><button id="week">Uke</button><button id="editWeek" hidden="">Endre denne uka</button></div></div>
+<div id="calendar" class="calendar"></div>
+</section>
+<aside class="panel side">
+<section><h2 id="selected"></h2><div id="dayItems"></div><button id="addDay" style="margin-top:10px">＋ Legg til på dagen</button><div id="dayLessons"></div></section>
+<section><h2>Kommende vurderinger</h2><div id="upcoming"></div></section>
+</aside>
+<p id="storage" class="muted storage" role="status">Vurderinger og timeplan lagres i denne nettleseren.</p>
+</main>
+<dialog id="assessment" aria-labelledby="assessmentTitle">
+<form id="assessmentForm">
+<div class="heading"><h2 id="assessmentTitle">Ny vurdering</h2><button type="button" data-close="assessment" aria-label="Lukk">×</button></div>
+<label>Dato<input type="date" name="date" required=""></label>
+<label id="lessonChoice" hidden="">Velg fra timeplanen<select id="lessonSelect"></select></label>
+<label>Fag<input name="subject" required="" maxlength="70" list="subjects"></label><datalist id="subjects"></datalist>
+<label>Type<select name="type"><option>Prøve</option><option>Innlevering</option><option>Muntlig</option><option>Annet</option></select></label>
+<label>Tema <span class="muted">(valgfritt)</span><input name="topic" maxlength="100"></label>
+<label>Lenke til læringstre <span class="muted">(valgfritt)</span><input name="tree" type="url" placeholder="https://…"></label>
+<p class="error" id="assessmentError" role="alert"></p>
+<div class="actions"><button id="deleteAssessment" type="button">Slett</button><button class="primary" type="submit">Lagre vurdering</button></div>
+</form></dialog>
+<dialog id="timetable" aria-labelledby="scheduleTitle">
+<div class="heading"><h2 id="scheduleTitle">Min timeplan</h2><button data-close="timetable" aria-label="Lukk">×</button></div>
+<p id="scheduleMode" class="muted"></p>
+<button id="resetWeek" type="button" hidden="">Bruk fast timeplan igjen</button>
+<form id="lessonForm">
+<label>Ukedag<select name="weekday" id="lessonWeekday"></select></label>
+<label>Fag<input name="subject" required="" maxlength="70" list="subjects"></label>
+<label>Starttid <span class="muted">(valgfritt)</span><input name="time" type="time"></label>
+<button class="primary" type="submit">Legg til time</button>
+</form><div id="lessonItems"></div>
+</dialog>
+<dialog id="routeDialog" aria-labelledby="routeTitle">
+<div class="heading"><h2 id="routeTitle">Skolerute</h2><button data-close="routeDialog" aria-label="Lukk">×</button></div>
+<p class="muted">Faste timer vises fra første til siste skoledag. Norske helligdager er lagt inn automatisk.</p>
+<form id="yearForm">
+<label>Første skoledag<input type="date" name="start" required=""></label>
+<label>Siste skoledag<input type="date" name="end" required=""></label>
+<button class="primary">Lagre skoleår</button>
+</form>
+<form id="breakForm">
+<label>Navn på fridag eller ferie<input name="label" required="" maxlength="70" placeholder="F.eks. Høstferie"></label>
+<label>Fra og med<input type="date" name="start" required=""></label>
+<label>Til og med (valgfritt)<input type="date" name="end"></label>
+<button class="primary">Legg til fridag eller ferie</button>
+</form>
+<p id="routeStatus" role="status"></p><div id="breakItems"></div>
+<button id="copyRoute" type="button" style="margin-top:12px">Last ned HTML med skoleruten</button>
+
+</dialog>
+<script id="school-defaults" type="application/json">{"start":"","end":"","breaks":[{"id":"mwmapnvuob7up4m4e0j","start":"2027-02-22","end":"2027-02-26","label":"Vinterferie"},{"id":"mwmaqevw3endnjxrclb","start":"2027-03-22","end":"2027-03-29","label":"Påskeferie"}]}</script>
+<script>
+const originalPage = document.documentElement.outerHTML;
+const byId = id => document.getElementById(id);
+const key = 'provekalender-v1';
+let state = { assessments: [], lessons: [] };
+try {
+  const saved = JSON.parse(localStorage.getItem(key));
+  if (saved && Array.isArray(saved.assessments) && Array.isArray(saved.lessons)) state = saved;
+} catch { storageError(); }
+function storageError() {
+  byId('storage').textContent = 'Nettleseren kunne ikke lese eller lagre kalenderen lokalt.';
+}
+function save(next) {
+  try { localStorage.setItem(key, JSON.stringify(next)); }
+  catch { storageError(); return false; }
+  state = next;
+  render();
+  return true;
+}
+const defaults = JSON.parse(byId('school-defaults').textContent);
+const route = () => state.route ?? defaults;
+const dateKey = date => [date.getFullYear(), date.getMonth()+1, date.getDate()].map(n => String(n).padStart(2,'0')).join('-');
+const fromKey = key => new Date(key + 'T12:00:00');
+const shift = (date, days) => new Date(date.getFullYear(), date.getMonth(), date.getDate()+days, 12);
+const weekday = date => (date.getDay()+6)%7;
+const monday = date => shift(date,-weekday(date));
+const holidayCache = new Map();
+function holidays(year) {
+  if (holidayCache.has(year)) return holidayCache.get(year);
+  // Gregorian computus (Meeus/Jones/Butcher).
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19*a+b-d-g+15)%30;
+  const i = Math.floor(c / 4), k = c % 4, l = (32+2*e+2*i-h-k)%7;
+  const m = Math.floor((a+11*h+22*l)/451), n = h+l-7*m+114;
+  const easter = new Date(year,Math.floor(n/31)-1,n%31+1,12);
+  const dates = new Map([
+    ['01-01','Nyttårsdag'],['05-01','1. mai'],['05-17','Grunnlovsdagen'],
+    ['12-25','1. juledag'],['12-26','2. juledag']
+  ].map(([day,label]) => [year+'-'+day,label]));
+  for (const [offset,label] of [[-3,'Skjærtorsdag'],[-2,'Langfredag'],[0,'1. påskedag'],[1,'2. påskedag'],[39,'Kristi himmelfartsdag'],[49,'1. pinsedag'],[50,'2. pinsedag']]) {
+    dates.set(dateKey(shift(easter,offset)),label);
+  }
+  holidayCache.set(year,dates);
+  return dates;
+}
+function closedDay(date) {
+  const day = dateKey(date), school = route();
+  return holidays(date.getFullYear()).get(day)
+    || school.breaks.find(period => period.start <= day && day <= period.end)?.label
+    || (school.start && (day < school.start || day > school.end) ? 'Utenfor skoleåret' : '');
+}
+const weekKey = date => dateKey(monday(date));
+const weeklyLessons = date => state.weeks?.[weekKey(date)] ?? state.lessons;
+let scheduleWeek = null;
+const names = ['Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag','Søndag'];
+const format = (date, options) => date.toLocaleDateString('nb-NO', options);
+const sentence = value => value.charAt(0).toUpperCase() + value.slice(1);
+let selected = new Date(), viewDate = selected, mode = 'month', editing = null;
+const form = byId('assessmentForm'), lessonForm = byId('lessonForm');
+const field = (form, name) => form.elements.namedItem(name);
+const subject = field(form,'subject'), dateInput = field(form,'date');
+const assessmentDialog = byId('assessment'), scheduleDialog = byId('timetable');
+const id = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+function make(tag, value, className) {
+  const node = document.createElement(tag);
+  if (value) node.textContent = value;
+  if (className) node.className = className;
+  return node;
+}
+function button(label, action, className) {
+  const node = make('button',label,className);
+  node.type = 'button';
+  node.onclick = action;
+  return node;
+}
+function lessonsFor(date) {
+  return closedDay(date) ? [] : weeklyLessons(date).filter(lesson => lesson.weekday === weekday(date)).sort((a,b) => a.time.localeCompare(b.time));
+}
+function validLink(value) {
+  try { return ['https:','http:'].includes(new URL(value).protocol); } catch { return false; }
+}
+function assessmentCard(item, showDate) {
+  const card = make('article',null,'item');
+  card.append(button(item.subject, () => openAssessment(fromKey(item.date),null,item)));
+  const details = [showDate && format(fromKey(item.date),{day:'numeric',month:'short'}),item.type,item.topic].filter(Boolean);
+  card.append(make('small',details.join(' · ')));
+  if (validLink(item.tree)) {
+    const link = make('a','Åpne læringstreet ↗');
+    link.href = item.tree;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    card.append(link);
+  }
+  return card;
+}
+function render() {
+  const calendar = byId('calendar');
+  const weekly = mode === 'week';
+  const first = weekly ? monday(viewDate) : new Date(viewDate.getFullYear(),viewDate.getMonth(),1,12);
+  const start = monday(first);
+  const end = shift(start,6);
+  const total = weekly ? 7 : Math.ceil((weekday(first)+new Date(first.getFullYear(),first.getMonth()+1,0).getDate())/7)*7;
+  const short = {day:'numeric',month:'short'};
+  byId('period').textContent = weekly ? format(start,short)+' – '+format(end,{...short,year:'numeric'}) : sentence(format(first,{month:'long',year:'numeric'}));
+  for (const view of ['month','week']) byId(view).setAttribute('aria-pressed',String(view === mode));
+  calendar.classList.toggle('week',weekly);
+  byId('editWeek').hidden = !weekly;
+  calendar.replaceChildren(...names.map(name => make('div',name.slice(0,3),'weekday')));
+  const today = dateKey(new Date());
+  const active = dateKey(selected);
+  for (let i=0;i<total;i++) {
+    const date = shift(start,i), dateString = dateKey(date);
+    const cell = make('div',null,'day');
+    cell.classList.toggle('outside', !weekly && date.getMonth() !== first.getMonth());
+    cell.classList.toggle('selected', dateString === active);
+    const day = button(weekly ? format(date,{weekday:'short',day:'numeric'}) : String(date.getDate()), () => { selected = viewDate = date; render(); });
+    day.setAttribute('aria-label', format(date,{dateStyle:'full'}));
+    day.setAttribute('aria-pressed',String(dateString === active));
+    if (dateString === today) day.setAttribute('aria-current','date');
+    cell.append(day);
+    const closed = closedDay(date);
+    if (closed) {
+      cell.classList.add('closed');
+      cell.append(make('span',closed,'holiday'));
+    }
+    for (const item of state.assessments.filter(item => item.date === dateString)) {
+      const entry = button(item.subject, () => openAssessment(date,null,item),'entry');
+      entry.title = [item.subject,item.type,item.topic].filter(Boolean).join(' · ');
+      cell.append(entry);
+    }
+    if (weekly) for (const lesson of lessonsFor(date)) {
+      cell.append(button([lesson.time,lesson.subject].filter(Boolean).join(' '),() => openAssessment(date,lesson),'lesson'));
+    }
+    calendar.append(cell);
+  }
+  byId('selected').textContent = sentence(format(selected,{weekday:'long',day:'numeric',month:'long'}));
+  const daily = state.assessments.filter(item => item.date === active);
+  const upcoming = state.assessments.filter(item => item.date >= today).sort((a,b) => a.date.localeCompare(b.date));
+  setCards('dayItems',daily,'Ingen vurderinger denne dagen.');
+  const closed = closedDay(selected);
+  if (closed) byId('dayItems').prepend(make('p',closed,'muted'));
+  setCards('upcoming',upcoming,'Ingen kommende vurderinger.',true);
+  const lessons = lessonsFor(selected);
+  byId('dayLessons').replaceChildren();
+  if (lessons.length) byId('dayLessons').append(make('p','Fra timeplanen','muted'),...lessons.map(lesson => {
+    return button([lesson.time,lesson.subject].filter(Boolean).join(' '), () => openAssessment(selected,lesson));
+  }));
+  byId('subjects').replaceChildren(...[...new Set([...state.lessons,...state.assessments].map(item=>item.subject))].sort().map(value => new Option(value,value)));
+  renderSchedule();
+}
+function setCards(target, items, empty, showDate) {
+  byId(target).replaceChildren(...(items.length ? items.map(item => assessmentCard(item,showDate)) : [make('p',empty,'muted')]));
+}
+function updateLessons() {
+  const lessons = lessonsFor(fromKey(dateInput.value));
+  byId('lessonChoice').hidden = !lessons.length;
+  byId('lessonSelect').replaceChildren(new Option('Velg en time',''),...lessons.map(lesson => new Option([lesson.time,lesson.subject].filter(Boolean).join(' '),lesson.id)));
+}
+function openAssessment(date, lesson, item) {
+  editing = item?.id ?? null;
+  form.reset();
+  dateInput.value = dateKey(date);
+  subject.value = item?.subject ?? lesson?.subject ?? '';
+  if (item) for (const name of ['type','topic','tree']) field(form,name).value = item[name];
+  updateLessons();
+  if (lesson) byId('lessonSelect').value = lesson.id;
+  byId('assessmentTitle').textContent = item ? 'Rediger vurdering' : 'Ny vurdering';
+  byId('assessmentError').textContent = '';
+  byId('deleteAssessment').hidden = !item;
+  assessmentDialog.showModal();
+}
+dateInput.onchange = updateLessons;
+byId('lessonSelect').onchange = event => {
+  const lesson = state.lessons.find(lesson => lesson.id === event.target.value);
+  if (lesson) subject.value = lesson.subject;
+};
+form.onsubmit = event => {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(form));
+  for (const name of ['subject','topic','tree']) values[name] = values[name].trim();
+  if (!values.subject || (values.tree && !validLink(values.tree))) {
+    byId('assessmentError').textContent = 'Skriv inn et fag og bruk en nettadresse som starter med https:// eller http:// hvis du legger ved en lenke.';
+    return;
+  }
+  const next = {id:editing ?? id(),...values};
+  const assessments = editing ? state.assessments.map(item => item.id === editing ? next : item) : [...state.assessments,next];
+  if (save({...state,assessments})) {
+    selected = viewDate = fromKey(values.date);
+    render();
+    assessmentDialog.close();
+  } else byId('assessmentError').textContent = 'Vurderingen kunne ikke lagres.';
+};
+byId('deleteAssessment').onclick = () => {
+  if (confirm('Vil du slette denne vurderingen?') && save({...state,assessments:state.assessments.filter(item=>item.id !== editing)})) assessmentDialog.close();
+};
+function renderSchedule() {
+  const items = [...(scheduleWeek ? weeklyLessons(scheduleWeek) : state.lessons)].sort((a,b)=>a.weekday-b.weekday || a.time.localeCompare(b.time));
+  byId('lessonItems').replaceChildren(...items.map(lesson => {
+    const row = make('div',null,'item heading');
+    row.append(make('span', [names[lesson.weekday],lesson.time,lesson.subject].filter(Boolean).join(' · ')),button('Rediger', () => {
+      field(lessonForm,'weekday').value = lesson.weekday;
+      field(lessonForm,'subject').value = lesson.subject;
+      field(lessonForm,'time').value = lesson.time;
+      editingLesson = lesson.id;
+      lessonForm.querySelector('[type=submit]').textContent = 'Lagre endring';
+      field(lessonForm,'subject').focus();
+    }),button('Fjern',()=> {
+      if (saveLessons(items.filter(item=>item.id !== lesson.id))) resetLessonForm();
+    }));
+    return row;
+  }));
+}
+let editingLesson = null;
+function resetLessonForm() {
+  editingLesson = null;
+  lessonForm.reset();
+  lessonForm.querySelector('[type=submit]').textContent = 'Legg til time';
+}
+function saveLessons(lessons) {
+  if (!scheduleWeek) return save({...state,lessons});
+  const saved = save({...state,weeks:{...state.weeks,[weekKey(scheduleWeek)]:lessons}});
+  if (saved) byId('resetWeek').hidden = false;
+  return saved;
+}
+lessonForm.onsubmit = event => {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(lessonForm));
+  const name = values.subject.trim();
+  if (!name) return;
+  const day = Number(values.weekday);
+  if (scheduleWeek && (field(lessonForm,'weekday').selectedIndex < 0 || closedDay(shift(scheduleWeek,day)))) return;
+  const items = scheduleWeek ? weeklyLessons(scheduleWeek) : state.lessons;
+  const lesson = {id:editingLesson ?? id(),weekday:day,subject:name,time:values.time};
+  if (saveLessons(editingLesson ? items.map(item => item.id === editingLesson ? lesson : item) : [...items,lesson])) {
+    resetLessonForm();
+    field(lessonForm,'weekday').value = day;
+    field(lessonForm,'subject').focus();
+  }
+};
+byId('lessonWeekday').append(...names.map((name,index)=>new Option(name,index)));
+function navigate(direction) {
+  selected = viewDate = mode === 'week' ? shift(viewDate,7*direction) : new Date(viewDate.getFullYear(),viewDate.getMonth()+direction,1,12);
+  render();
+}
+byId('prev').onclick = () => navigate(-1);
+byId('next').onclick = () => navigate(1);
+byId('today').onclick = () => { selected = viewDate = new Date(); render(); };
+for (const view of ['month','week']) byId(view).onclick = () => { mode = view; render(); };
+byId('add').onclick = byId('addDay').onclick = () => openAssessment(selected);
+function openSchedule(week) {
+  scheduleWeek = week;
+  resetLessonForm();
+  byId('scheduleTitle').textContent = week ? 'Timeplan for uka fra '+format(week,{day:'numeric',month:'long',year:'numeric'}) : 'Fast timeplan';
+  byId('scheduleMode').textContent = week ? 'Endringer gjelder bare denne uka.' : 'Timene gjentas hver uke. Bruk Skolerute for å angi skoleåret og fridager.';
+  byId('resetWeek').hidden = !week || !Object.hasOwn(state.weeks ?? {},weekKey(week));
+  const options = [...byId('lessonWeekday').options];
+  for (const [index,option] of options.entries()) {
+    const reason = week && closedDay(shift(week,index));
+    option.disabled = Boolean(reason);
+    option.text = reason ? names[index]+' · '+reason : names[index];
+  }
+  byId('lessonWeekday').selectedIndex = options.findIndex(option => !option.disabled);
+  lessonForm.hidden = options.every(option => option.disabled);
+  renderSchedule();
+  scheduleDialog.showModal();
+}
+byId('schedule').onclick = () => openSchedule(null);
+byId('editWeek').onclick = () => openSchedule(monday(viewDate));
+byId('resetWeek').onclick = () => {
+  const weeks = {...state.weeks};
+  delete weeks[weekKey(scheduleWeek)];
+  if (save({...state,weeks})) {
+    resetLessonForm();
+    byId('resetWeek').hidden = true;
+  }
+};
+const yearForm = byId('yearForm'), breakForm = byId('breakForm');
+function renderRoute() {
+  const school = route();
+  for (const name of ['start','end']) field(yearForm,name).value = school[name];
+  byId('breakItems').replaceChildren(...[...school.breaks].sort((a,b) => a.start.localeCompare(b.start)).map(period => {
+    const row = make('div',null,'item heading');
+    const day = value => format(fromKey(value),{dateStyle:'medium'});
+    row.append(make('span',period.label+' · '+day(period.start)+(period.end === period.start ? '' : ' – '+day(period.end))),button('Fjern',() => {
+      if (save({...state,route:{...school,breaks:school.breaks.filter(item => item.id !== period.id)}})) renderRoute();
+    }));
+    return row;
+  }));
+}
+byId('schoolRoute').onclick = () => {
+  renderRoute();
+  byId('routeStatus').textContent = '';
+  byId('routeDialog').showModal();
+};
+yearForm.onsubmit = event => {
+  event.preventDefault();
+  const {start,end} = Object.fromEntries(new FormData(yearForm));
+  if (start > end) {
+    byId('routeStatus').textContent = 'Siste skoledag må være på eller etter første skoledag.';
+  } else if (save({...state,route:{...route(),start,end}})) {
+    byId('routeStatus').textContent = 'Skoleåret er lagret.';
+    renderRoute();
+  }
+};
+breakForm.onsubmit = event => {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(breakForm));
+  const end = values.end || values.start, label = values.label.trim();
+  if (!label || values.start > end) {
+    byId('routeStatus').textContent = 'Oppgi et navn og sjekk datoene.';
+  } else if (save({...state,route:{...route(),breaks:[...route().breaks,{id:id(),start:values.start,end,label}]}})) {
+    byId('routeStatus').textContent = 'Fridagen eller ferien er lagret.';
+    breakForm.reset();
+    renderRoute();
+  }
+};
+byId('copyRoute').onclick = () => {
+  const template = new DOMParser().parseFromString(originalPage,'text/html');
+  template.getElementById('school-defaults').textContent = JSON.stringify(route()).replaceAll('<',String.fromCharCode(92)+'u003c');
+  const file = new Blob(['<!doctype html>\n',template.documentElement.outerHTML],{type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(file);
+  const link = make('a');
+  link.href = url;
+  link.download = 'Provekalender.html';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url),1000);
+  byId('routeStatus').textContent = 'Den nedlastede HTML-filen har skoleruten som standard.';
+};
+for (const close of document.querySelectorAll('[data-close]')) close.onclick = () => byId(close.dataset.close).close();
+render();
+</script></body></html>
