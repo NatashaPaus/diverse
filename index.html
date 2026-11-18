@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#25254f">
+<title>Diverse · Natasha Paus</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #f4f5fb; color: #242445; font-family: "Aptos", "Segoe UI", system-ui, sans-serif; }
+header { background: #25254f; color: white; padding: 22px max(24px, calc((100vw - 1000px) / 2)); }
+header p { margin: 0; font-size: 1rem; }
+main { max-width: 1048px; margin: 0 auto; padding: 64px 24px; }
+h1 { font-size: clamp(2.3rem, 6vw, 3.5rem); letter-spacing: -.04em; margin: 0 0 12px; }
+.intro { color: #555976; font-size: 1.15rem; margin: 0 0 36px; line-height: 1.6; }
+nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.tile { min-height: 164px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 28px; padding: 26px; border-radius: 18px; text-align: left; font: inherit; border: 1px solid #dcdfee; text-decoration: none; }
+.live { color: white; background: #5141bd; border-color: #5141bd; transition: background .15s, transform .15s; }
+.live:hover { background: #4232a5; transform: translateY(-2px); }
+.title { font-size: 1.35rem; font-weight: 650; }
+.description { display: block; font-size: .98rem; line-height: 1.5; margin-top: 8px; }
+.destination { width: 100%; display: flex; align-items: center; justify-content: space-between; font-size: .95rem; }
+.placeholder { background: #fff; color: #60647d; opacity: 1; cursor: default; }
+.placeholder .description { color: #686d82; }
+.live:focus-visible { outline: 3px solid #8877eb; outline-offset: 5px; }
+@media (max-width: 560px) {
+  main { padding: 36px 18px; }
+  nav { grid-template-columns: 1fr; gap: 14px; }
+  .tile { min-height: 145px; padding: 22px; gap: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { .live { transition: none; } }
+</style>
+</head>
+<body>
+<header><p>Natasha Paus</p></header>
+<main>
+<h1>Diverse</h1>
+<p class="intro">Verktøy og ressurser til skolehverdagen.</p>
+<nav aria-label="Verktøy og sider">
+<a class="tile live" href="./Provekalender%20%281%29.html">
+<span><span class="title">Prøvekalender</span><span class="description">Hold oversikt over timeplan, prøver og innleveringer.</span></span>
+<span class="destination">Åpne kalenderen <span aria-hidden="true">↗</span></span>
+</a>
+<!-- Bytt ut en deaktivert knapp med en lenke når den nye siden er klar. -->
+<button class="tile placeholder" type="button" disabled>
+<span><span class="title">Kommende side</span><span class="description">En ny ressurs kommer her.</span></span>
+<span class="destination">Kommer snart</span>
+</button>
+<button class="tile placeholder" type="button" disabled>
+<span><span class="title">Kommende side</span><span class="description">En ny ressurs kommer her.</span></span>
+<span class="destination">Kommer snart</span>
+</button>
+<button class="tile placeholder" type="button" disabled>
+<span><span class="title">Kommende side</span><span class="description">En ny ressurs kommer her.</span></span>
+<span class="destination">Kommer snart</span>
+</button>
+</nav>
+</main>
+</body>
+</html>
