@@ -1,15 +1,14 @@
 <!doctype html>
-<html lang="nb">
-<meta charset="utf-8">
+<html lang="nb"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Prøvekalender</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f4f6fc;color:#202445;font:16px Inter,system-ui,sans-serif}button,input,select{font:inherit}button{cursor:pointer}header{background:#22224f;color:white;padding:24px max(20px,calc((100vw - 1220px)/2))}header div,.toolbar,.heading,.actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}h1,h2,p{margin:0}header p{color:#dad8fa;margin-top:5px}button,.link{border:1px solid #d8daea;border-radius:9px;background:white;color:#25254f;padding:8px 12px}.primary,[aria-pressed=true]{background:#5141c2;color:white;border-color:#5141c2}main{max-width:1260px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px;align-items:start}.panel{background:white;border:1px solid #dfe1ee;border-radius:16px;padding:16px}.toolbar{margin-bottom:16px}.group{display:flex;gap:5px;flex-wrap:wrap}.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}.weekday{text-align:center;font-size:.8rem;color:#555a78;padding:6px 0}.day{position:relative;min-height:85px;border-radius:8px;background:#f5f6fb;padding:4px;min-width:0;border:1px solid transparent}.day.outside{background:#fafafd}.day.closed{background:#fff1e8}.holiday{display:block;color:#863d20;font-size:.72rem;overflow:hidden;text-overflow:ellipsis}.day.selected{border-color:#5141c2;background:#eeebff}.day button{border:0;background:transparent;width:100%;text-align:left;padding:3px 5px}.day button[aria-current=date]{font-weight:800;color:#4935b2}.day .entry{display:block;background:#e1dcff;color:#392794;border-radius:5px;margin-top:3px;font-size:.77rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.week .day{min-height:220px}.week .lesson{font-size:.75rem;overflow-wrap:anywhere;color:#4e536f}.muted{color:#555a78;font-size:.87rem}.side h2{font-size:1.16rem}.side section+section{margin-top:20px;border-top:1px solid #e5e6f0;padding-top:16px}.item{margin-top:9px;padding:9px;background:#f4f2ff;border-radius:8px;overflow-wrap:anywhere}.item button{border:0;background:transparent;text-align:left;padding:0;font-weight:700}.item a{display:block;margin-top:4px;color:#40319c}.item small{display:block;color:#555a78}.side p,dialog p{margin:8px 0}.storage{grid-column:1/-1}.error{color:#a12038}dialog{border:1px solid #dfe1ee;border-radius:16px;width:min(460px,calc(100% - 24px));max-height:90vh;color:inherit;padding:20px}dialog::backdrop{background:#15142b88}label{display:block;margin:10px 0}input,select{display:block;width:100%;padding:8px;margin-top:4px;border:1px solid #bfc3da;border-radius:7px;background:white;color:inherit}button:focus-visible,a:focus-visible{outline:2px solid #6f54ef;outline-offset:2px}[hidden]{display:none!important}@media(max-width:850px){main{grid-template-columns:1fr}}@media(max-width:520px){main{padding:0 8px;margin-top:12px}.panel{padding:8px}.day{min-height:61px;padding:2px}.week.calendar{grid-template-columns:1fr}.week .weekday{display:none}.week .day{min-height:64px}.week .day button{text-align:left}}
 </style>
-<header><div><section><h1>Prøvekalender</h1><p>Prøver, innleveringer og muntlige vurderinger</p></section><nav class="group"><button id="schoolRoute">Skolerute</button><button id="schedule">Min timeplan</button><button id="add" class="primary">＋ Ny vurdering</button></nav></div></header>
+</head><body><header><div><section><h1>Prøvekalender</h1><p>Prøver, innleveringer og muntlige vurderinger</p></section><nav class="group"><button id="schoolRoute">Skolerute</button><button id="schedule">Min timeplan</button><button id="add" class="primary">＋ Ny vurdering</button></nav></div></header>
 <main>
 <section class="panel" aria-label="Kalender">
-<div class="toolbar"><div class="group"><button id="prev" aria-label="Forrige periode">‹</button><button id="today">I dag</button><button id="next" aria-label="Neste periode">›</button></div><h2 id="period" aria-live="polite"></h2><div class="group"><button id="month">Måned</button><button id="week">Uke</button><button id="editWeek" hidden>Endre denne uka</button></div></div>
+<div class="toolbar"><div class="group"><button id="prev" aria-label="Forrige periode">‹</button><button id="today">I dag</button><button id="next" aria-label="Neste periode">›</button></div><h2 id="period" aria-live="polite"></h2><div class="group"><button id="month">Måned</button><button id="week">Uke</button><button id="editWeek" hidden="">Endre denne uka</button></div></div>
 <div id="calendar" class="calendar"></div>
 </section>
 <aside class="panel side">
@@ -21,9 +20,9 @@
 <dialog id="assessment" aria-labelledby="assessmentTitle">
 <form id="assessmentForm">
 <div class="heading"><h2 id="assessmentTitle">Ny vurdering</h2><button type="button" data-close="assessment" aria-label="Lukk">×</button></div>
-<label>Dato<input type="date" name="date" required></label>
-<label id="lessonChoice" hidden>Velg fra timeplanen<select id="lessonSelect"></select></label>
-<label>Fag<input name="subject" required maxlength="70" list="subjects"></label><datalist id="subjects"></datalist>
+<label>Dato<input type="date" name="date" required=""></label>
+<label id="lessonChoice" hidden="">Velg fra timeplanen<select id="lessonSelect"></select></label>
+<label>Fag<input name="subject" required="" maxlength="70" list="subjects"></label><datalist id="subjects"></datalist>
 <label>Type<select name="type"><option>Prøve</option><option>Innlevering</option><option>Muntlig</option><option>Annet</option></select></label>
 <label>Tema <span class="muted">(valgfritt)</span><input name="topic" maxlength="100"></label>
 <label>Lenke til læringstre <span class="muted">(valgfritt)</span><input name="tree" type="url" placeholder="https://…"></label>
@@ -33,10 +32,10 @@
 <dialog id="timetable" aria-labelledby="scheduleTitle">
 <div class="heading"><h2 id="scheduleTitle">Min timeplan</h2><button data-close="timetable" aria-label="Lukk">×</button></div>
 <p id="scheduleMode" class="muted"></p>
-<button id="resetWeek" type="button" hidden>Bruk fast timeplan igjen</button>
+<button id="resetWeek" type="button" hidden="">Bruk fast timeplan igjen</button>
 <form id="lessonForm">
 <label>Ukedag<select name="weekday" id="lessonWeekday"></select></label>
-<label>Fag<input name="subject" required maxlength="70" list="subjects"></label>
+<label>Fag<input name="subject" required="" maxlength="70" list="subjects"></label>
 <label>Starttid <span class="muted">(valgfritt)</span><input name="time" type="time"></label>
 <button class="primary" type="submit">Legg til time</button>
 </form><div id="lessonItems"></div>
@@ -45,13 +44,13 @@
 <div class="heading"><h2 id="routeTitle">Skolerute</h2><button data-close="routeDialog" aria-label="Lukk">×</button></div>
 <p class="muted">Faste timer vises fra første til siste skoledag. Norske helligdager er lagt inn automatisk.</p>
 <form id="yearForm">
-<label>Første skoledag<input type="date" name="start" required></label>
-<label>Siste skoledag<input type="date" name="end" required></label>
+<label>Første skoledag<input type="date" name="start" required=""></label>
+<label>Siste skoledag<input type="date" name="end" required=""></label>
 <button class="primary">Lagre skoleår</button>
 </form>
 <form id="breakForm">
-<label>Navn på fridag eller ferie<input name="label" required maxlength="70" placeholder="F.eks. Høstferie"></label>
-<label>Fra og med<input type="date" name="start" required></label>
+<label>Navn på fridag eller ferie<input name="label" required="" maxlength="70" placeholder="F.eks. Høstferie"></label>
+<label>Fra og med<input type="date" name="start" required=""></label>
 <label>Til og med (valgfritt)<input type="date" name="end"></label>
 <button class="primary">Legg til fridag eller ferie</button>
 </form>
@@ -59,7 +58,7 @@
 <button id="copyRoute" type="button" style="margin-top:12px">Last ned HTML med skoleruten</button>
 
 </dialog>
-<script id="school-defaults" type="application/json">{"start":"","end":"","breaks":[]}</script>
+<script id="school-defaults" type="application/json">{"start":"2026-08-17","end":"2027-06-18","breaks":[{"id":"mwnip2kz7pxbn9v691n","start":"2026-12-21","end":"2027-01-01","label":"Juleferie"},{"id":"mwnipihkpmf1anpoecb","start":"2027-02-22","end":"2027-02-26","label":"Vinterferie"},{"id":"mwniq9kuwxwa2v5527","start":"2027-03-22","end":"2027-03-29","label":"Påskeferie"}]}</script>
 <script>
 const originalPage = document.documentElement.outerHTML;
 const byId = id => document.getElementById(id);
@@ -393,5 +392,4 @@ byId('copyRoute').onclick = () => {
 };
 for (const close of document.querySelectorAll('[data-close]')) close.onclick = () => byId(close.dataset.close).close();
 render();
-</script>
-</html>
+</script></body></html>
